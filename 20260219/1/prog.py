@@ -21,4 +21,16 @@ def parse_commit(commit_data):
     message = parts[1].strip() if len(parts) > 1 else ""
     
     commit_info = {"message": message, "parents": []}
+    commit_info = {"message": message, "parents": []}
+    for line in header_lines:
+        key, _, value = line.partition(" ")
+        if key == "tree":
+            commit_info["tree"] = value
+        elif key == "parent":
+            commit_info["parents"].append(value)
+        elif key == "author":
+            commit_info["author"] = value
+        elif key == "committer":
+            commit_info["committer"] = value
+            
     return commit_info
