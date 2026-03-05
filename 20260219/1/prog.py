@@ -85,3 +85,44 @@ def parse_tree(tree_content):
         entries.append((obj_type, sha, filename))
     
     return entries
+
+def show_tree(repo_path, tree_hash):
+    raw_data = read_git_object(repo_path, tree_hash)
+    null_sep = raw_data.find(b'\x00')
+    tree_content = raw_data[null_sep + 1:] if null_sep != -1 else raw_data
+    
+    entries = parse_tree(tree_content)
+    for obj_type, obj_hash, filename in entries:
+        print(f"{obj_type} {obj_hash}    {filename}")
+
+def show_history(repo_path, start_commit_info, start_commit_hash):
+    current_hash = start_commit_hash
+    current_info = start_commit_info
+    
+    while current_hash:
+        print(f"TREE for commit {current_hash}")
+        show_tree(repo_path, current_info["tree"])
+        print()
+        
+        if current_info["parents"]:
+            current_hash = current_info["parents"][0]
+            raw_data = read_git_object(repo_path, current_hash)
+            null_sep = raw_data.find(b'\x00')
+            commit_content = raw_data[null_sep + 1:] if null_sep != -1 else raw_data
+            current_info = parse_commit(commit_content)
+        else:
+            break
+
+def list_branches(repo_path):
+    git_dir = get_git_directory(repo_path)
+    if not git_dir:
+        print("not a valid git repository")
+        return
+    
+    heads_dir = os.path.join(git_dir, 'refs', 'heads')
+    if not os.path.isdir(heads_dir):
+        print("No branches found!")
+        return
+    
+    for branch_file in sorted(os.listdir(heads_dir)):
+        print(branch_file)
