@@ -126,3 +126,17 @@ def list_branches(repo_path):
     
     for branch_file in sorted(os.listdir(heads_dir)):
         print(branch_file)
+
+if len(sys.argv) < 2:
+    print("Использование: python prog.py <путь_к_репозиторию> [имя_ветки]")
+    sys.exit(1)
+
+repo_path = sys.argv[1]
+
+if len(sys.argv) == 2:
+    list_branches(repo_path)
+else:
+    branch_name = sys.argv[2]
+    commit_info, commit_hash = show_last_commit(repo_path, branch_name)
+    if commit_info:
+        show_history(repo_path, commit_info, commit_hash)
