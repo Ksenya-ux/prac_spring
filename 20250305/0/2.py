@@ -1,4 +1,4 @@
-import shlex 
-while l:=shlex.split(input()):
-	print(shlex.join(l))
-	
+import shlex
+fio = input()
+place =  input() 
+print(quote(fio)+quote(shlex.join(place)))
