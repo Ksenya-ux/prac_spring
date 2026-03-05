@@ -43,3 +43,14 @@ def get_branch_commit_hash(repo_path, branch_name):
     
     with open(branch_path, 'r') as f:
         return f.read().strip()
+def show_last_commit(repo_path, branch_name):
+    commit_hash = get_branch_commit_hash(repo_path, branch_name)
+    if not commit_hash:
+        return None, None
+    
+    raw_data = read_git_object(repo_path, commit_hash)
+    null_sep = raw_data.find(b'\x00')
+    commit_content = raw_data[null_sep + 1:] if null_sep != -1 else raw_data
+    commit_info = parse_commit(commit_content)
+    
+    return commit_info, commit_hash
