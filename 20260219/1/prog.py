@@ -34,3 +34,12 @@ def parse_commit(commit_data):
             commit_info["committer"] = value
             
     return commit_info
+
+def get_branch_commit_hash(repo_path, branch_name):
+    branch_path = os.path.join(repo_path, '.git', 'refs', 'heads', branch_name)
+    if not os.path.isfile(branch_path):
+        print(f"Branch '{branch_name}' not found", file=sys.stderr)
+        return None
+    
+    with open(branch_path, 'r') as f:
+        return f.read().strip()
