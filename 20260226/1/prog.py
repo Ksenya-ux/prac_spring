@@ -36,7 +36,7 @@ class MUD:
     def encounter(self, x, y):
         hello = self.field[x][y]
         if hello is not None:
-            print(cowsay.cowsay(hello))
+            print(cowsay.cow(hello))
 
     def process_cmd(self, command):
         parts = command.split()
