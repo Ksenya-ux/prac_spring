@@ -22,3 +22,7 @@ class MUD:
         self.player_position = (x, y)
         print(f"Moved to ({x}, {y})")
         self.encounter(x, y)
+	 def encounter(self, x, y):
+        hello = self.field[x][y]
+        if hello is not None:
+            print(cowsay.cowsay(hello))
