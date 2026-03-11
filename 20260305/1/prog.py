@@ -81,7 +81,7 @@ class MUD:
         else:
             print("Invalid command")
 
-
+print("<<< Welcome to Python-MUD 0.1 >>>")
 game = MUD()
 if sys.stdin.isatty():
     while True:
