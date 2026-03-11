@@ -1,6 +1,6 @@
 import sys
-import shlex
 import cowsay
+import shlex
 
 class MUD:
     def __init__(self):
@@ -38,7 +38,8 @@ class MUD:
         print(f"Moved to ({x}, {y})")
         self.encounter(x, y)
 
-    def add_monster(self, name, x, y, hello):
+
+    def add_monster(self, name, x, y, hello,hp):
         if name not in self.available_monsters and name != 'jgsbat':
             print("Cannot add unknown monster")
             return
@@ -57,28 +58,72 @@ class MUD:
     def encounter(self, x, y):
         monster = self.field[x][y]
         if monster is not None:
-            name, hello = monster
+            name, hello, hp = monster
             if name == 'jgsbat':
                 print(cowsay.cowsay(message=hello, cowfile=self.jgsbat))
             else:
                 print(cowsay.cowsay(message=hello, cow=name))
 
     def process_cmd(self, command):
-        parts = command.split()
+        try:
+            parts = shlex.split(command)
+        except:
+            print("Invalid command syntax")
+            return
+
         if not parts:
             print("Invalid command")
             return
 
         if parts[0] in ['up', 'down', 'left', 'right']:
             self.move_player(parts[0])
-        elif parts[0] == 'addmon' and len(parts) == 5:
-            try:
-                x, y = int(parts[2]), int(parts[3])
-                name = parts[1]
-                hello = parts[4]
-                self.add_monster(name, x, y, hello)
-            except ValueError:
-                print("Invalid arguments")
+        elif parts[0] == 'addmon':
+            if len(parts) < 8:
+                print("Missing required parameters")
+                return
+
+            name = None
+            hello = None
+            hp = None
+            x = None
+            y = None
+            
+            i = 1
+            while i < len(parts):
+                if parts[i] == 'hello' and i + 1 < len(parts):
+                    hello = parts[i + 1]
+                    i += 2
+                elif parts[i] == 'hp' and i + 1 < len(parts):
+                    try:
+                        hp = int(parts[i + 1])
+                        if hp <= 0:
+                            print("Hitpoints must be positive")
+                            return
+                    except:
+                        print("Invalid hitpoints value")
+                        return
+                    i += 2
+                elif parts[i] == 'coords' and i + 2 < len(parts):
+                    try:
+                        x = int(parts[i + 1])
+                        y = int(parts[i + 2])
+                    except:
+                        print("Invalid coordinates")
+                        return
+                    i += 3
+                else:
+                    if name is None:
+                        name = parts[i]
+                        i += 1
+                    else:
+                        print("Invalid command syntax")
+                        return
+
+            if None in [name, hello, hp, x, y]:
+                print("Missing required parameters")
+                return
+
+            self.add_monster(name, x, y, hello, hp)
         else:
             print("Invalid command")
 
