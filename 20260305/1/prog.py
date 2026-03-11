@@ -1,4 +1,5 @@
 import sys
+import shlex
 import cowsay
 
 class MUD:
@@ -47,8 +48,8 @@ class MUD:
             return
 
         old_mon = self.field[x][y] is not None
-        self.field[x][y] = (name, hello)
-        print(f"Added monster {name} to ({x}, {y}) saying {hello}")
+        self.field[x][y] = (name, hello, hp)
+        print(f"Added monster {name} to ({x}, {y}) saying {hello} with {hp} hp")
 
         if old_mon:
             print("Replaced the old monster")
