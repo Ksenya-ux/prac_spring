@@ -198,9 +198,9 @@ class MUD(cmd.Cmd):
         else:
             self.field[x][y] = (name, hello, hp)
             print(f"{name} now has {hp}")
+    
     def complete_attack(self, text, line, start, end):
         return [m for m in self.available_monsters + ['jgsbat'] if m.startswith(text)]
-            
         
 def main():
     print("<<< Welcome to Python-MUD 0.1 >>>")
