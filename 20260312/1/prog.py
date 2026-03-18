@@ -182,6 +182,7 @@ class MUD(cmd.Cmd):
         else:
             self.field[x][y] = (name, hello, hp)
             print(f"{name} now has {hp}")
+            
         
 def main():
     print("<<< Welcome to Python-MUD 0.1 >>>")
