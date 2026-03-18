@@ -67,7 +67,19 @@ class MUD(cmd.Cmd):
                 print(cowsay.cowsay(message=hello, cowfile=self.jgsbat))
             else:
                 print(cowsay.cowsay(message=hello, cow=name))
-
+                
+    def do_up(self, arg):
+        self.move_player('up')
+        
+    def do_down(self, arg):
+        self.move_player('down')
+        
+    def do_left(self, arg):
+        self.move_player('left')
+        
+    def do_right(self, arg):
+        self.move_player('right')
+        
     def do_addmon(self, arg):
         try:
             parts = shlex.split(arg)
