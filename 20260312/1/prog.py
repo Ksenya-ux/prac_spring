@@ -184,7 +184,7 @@ class MUD(cmd.Cmd):
             return
             
         if weapon not in self.weapons:
-            print("Invalid weapon")
+            print("Unkown weapon")
             return
             
         x, y = self.player_position
