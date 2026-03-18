@@ -175,10 +175,14 @@ class MUD(cmd.Cmd):
         except:
             print("Invalid syntax")
             return
-        if len(parts) != 2 or parts[0] != 'with':
-            print("Invalid syntax")
+        if len(parts) == 0:
+            weapon = 'sword'
+        elif len(parts) == 2 and parts[0] == 'with':
+            weapon = parts[1]
+        else:
+            print("Invalid command")
             return
-        weapon = parts[1]
+            
         if weapon not in self.weapons:
             print("Invalid weapon")
             return
@@ -190,7 +194,7 @@ class MUD(cmd.Cmd):
             print("No monster here")
             return
         name, hello, hp = monster
-        damage = min(hp, 10)
+        damage = min(hp, self.weapons[weapon])
         hp = hp - damage
         print(f"Attacked {name}, damage {damage} hp")
         
