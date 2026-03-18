@@ -163,6 +163,15 @@ class MUD(cmd.Cmd):
                         result.append(a)
                 return result
         return []
+        
+    def do_attack(self,arg):
+        x, y = self.player_position
+        monster = self.field[x][y]
+		
+        if monster is None:
+            print("No monster here")
+            return
+		
 
 def main():
     print("<<< Welcome to Python-MUD 0.1 >>>")
