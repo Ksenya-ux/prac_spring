@@ -132,6 +132,11 @@ class MUD(cmd.Cmd):
             return
 
         self.add_monster(name, x, y, hello, hp)
+    def do_EOF(self, arg):
+        print()
+        return True
+
+
 
 def main():
     print("<<< Welcome to Python-MUD 0.1 >>>")
