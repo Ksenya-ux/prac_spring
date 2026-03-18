@@ -10,6 +10,11 @@ class MUD(cmd.Cmd):
         self.player_position = (0, 0)
         self.prompt = 'MUD> '
         self.addmon_params = ['hello', 'hp', 'coords']
+        self.weapons = {
+            'sword': 10,
+            'spear': 15,
+            'axe': 20
+        }
         with open('/tmp/jgsbat.cow', 'w') as f:
             f.write("""
     ,_                    _,
@@ -165,20 +170,33 @@ class MUD(cmd.Cmd):
         return []
         
     def do_attack(self, arg):
+        try:
+            parts = shlex.split(arg)
+        except:
+            print("Invalid syntax")
+            return
+        if len(parts) != 2 or parts[0] != 'with':
+            print("Invalid syntax")
+            return
+        weapon = parts[1]
+        if weapon not in self.weapons:
+            print("Invalid weapon")
+            return
+            
         x, y = self.player_position
         monster = self.field[x][y]
-		
+        
         if monster is None:
             print("No monster here")
             return
         name, hello, hp = monster
-        damage = min(hp,10)
+        damage = min(hp, 10)
         hp = hp - damage
-        print(f"Attacked <name>, damage <damage> hp")
+        print(f"Attacked {name}, damage {damage} hp")
         
         if hp == 0:
             self.field[x][y] = None
-            print(" {name}  died")
+            print(f"{name} died")
         else:
             self.field[x][y] = (name, hello, hp)
             print(f"{name} now has {hp}")
