@@ -173,72 +173,70 @@ class MUD(cmd.Cmd):
         try:
             parts = shlex.split(arg)
         except:
-<<<<<<< HEAD
-            print("Invalid syntax")
+            print("Invalid command syntax")
             return
+        
+        monster_name = None
+        weapon = 'sword'
+        
         if len(parts) == 0:
-            weapon = 'sword'
-        elif len(parts) == 2 and parts[0] == 'with':
+            pass
+        elif len(parts) == 1:
+            monster_name = parts[0]
+        elif len(parts) == 2 and parts[0].lower() == 'with':
             weapon = parts[1]
+        elif len(parts) == 3 and parts[1].lower() == 'with':
+            monster_name = parts[0]
+            weapon = parts[2]
         else:
-            print("Invalid command")
+            print("Invalid command syntax")
             return
-            
+        
         if weapon not in self.weapons:
             print("Unknown weapon")
             return
-            
-=======
-            print("Invalid command syntax")
-            return
         
-        if len(parts) != 1:
-            print("Invalid command syntax")
-            return
-        
-        monster_name = parts[0]
->>>>>>> attack_by_name
         x, y = self.player_position
         monster = self.field[x][y]
         
         if monster is None:
-            print(f"No {monster_name} here")
+            if monster_name:
+                print(f"No {monster_name} here")
+            else:
+                print("No monster here")
             return
-        name, hello, hp = monster
-<<<<<<< HEAD
-        damage = min(hp, self.weapons[weapon])
-=======
         
-        if name != monster_name:
+        name, hello, hp = monster
+        
+        if monster_name and name != monster_name:
             print(f"No {monster_name} here")
             return
-            
-        damage = min(hp, 10)
->>>>>>> attack_by_name
+        
+        damage = min(hp, self.weapons[weapon])
         hp = hp - damage
         print(f"Attacked {name}, damage {damage} hp")
         
-        if hp == 0:
+        if hp <= 0:
             self.field[x][y] = None
             print(f"{name} died")
         else:
             self.field[x][y] = (name, hello, hp)
             print(f"{name} now has {hp}")
-<<<<<<< HEAD
-            
-    def complete_attack(self, text, line, start, end):
-        parts = line.split()
-        
-        if len(parts) >= 2 and parts[1] == 'with':
-            return [w for w in self.weapons.keys() if w.startswith(text)]
-        
-        return []
-            
-=======
     
-    def complete_attack(self, text, line, start, end):
-        return [m for m in self.available_monsters + ['jgsbat'] if m.startswith(text)]
->>>>>>> attack_by_name
+    def complete_attack(self, text, line, begidx, endidx):
+        parts = line[:endidx].split()
+        
+        if len(parts) <= 2 and not any(p.lower() == 'with' for p in parts):
+            monsters = self.available_monsters + ['jgsbat']
+            return [m for m in monsters if m.startswith(text)]
+        elif len(parts) >= 2 and parts[-1].lower() == 'with':
+            return [w for w in self.weapons.keys() if w.startswith(text)]
+        elif len(parts) >= 3 and parts[-2].lower() == 'with':
+            return [w for w in self.weapons.keys() if w.startswith(text)]
+        else:
+            if 'with' not in [p.lower() for p in parts] and 'with'.startswith(text.lower()):
+                return ['with']
+        return []
         
 def main():
     print("<<< Welcome to Python-MUD 0.1 >>>")
