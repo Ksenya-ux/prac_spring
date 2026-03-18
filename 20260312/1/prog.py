@@ -8,6 +8,7 @@ class MUD(cmd.Cmd):
         super().__init__()
         self.field = [[None for _ in range(10)] for _ in range(10)]
         self.player_position = (0, 0)
+        self.prompt = 'MUD> '
         with open('/tmp/jgsbat.cow', 'w') as f:
             f.write("""
     ,_                    _,
@@ -42,7 +43,7 @@ class MUD(cmd.Cmd):
         self.encounter(x, y)
 
 
-    def add_monster(self, name, x, y, hello,hp):
+    def add_monster(self, name, x, y, hello, hp):
         if name not in self.available_monsters and name != 'jgsbat':
             print("Cannot add unknown monster")
             return
@@ -67,74 +68,69 @@ class MUD(cmd.Cmd):
             else:
                 print(cowsay.cowsay(message=hello, cow=name))
 
-    def process_cmd(self, command):
+    def do_addmon(self, arg):
         try:
-            parts = shlex.split(command)
+            parts = shlex.split(arg)
         except:
             print("Invalid command syntax")
             return
-
-        if not parts:
-            print("Invalid command")
+        if len(parts) < 7:
+            print("Missing required parametrs!")
             return
 
-        if parts[0] in ['up', 'down', 'left', 'right']:
-            self.move_player(parts[0])
-        elif parts[0] == 'addmon':
-            if len(parts) < 8:
-                print("Missing required parameters")
-                return
-
-            name = None
-            hello = None
-            hp = None
-            x = None
-            y = None
+        name = None
+        hello = None
+        hp = None
+        x = None
+        y = None
             
-            i = 1
-            while i < len(parts):
-                if parts[i] == 'hello' and i + 1 < len(parts):
-                    hello = parts[i + 1]
-                    i += 2
-                elif parts[i] == 'hp' and i + 1 < len(parts):
-                    try:
-                        hp = int(parts[i + 1])
-                        if hp <= 0:
-                            print("Hitpoints must be positive")
-                            return
-                    except:
-                        print("Invalid hitpoints value")
+        i = 0
+        while i < len(parts):
+            if parts[i] == 'hello' and i + 1 < len(parts):
+                hello = parts[i + 1]
+                i += 2
+            elif parts[i] == 'hp' and i + 1 < len(parts):
+                try:
+                    hp = int(parts[i + 1])
+                    if hp < 0:
+                        print("Hitpoints must be positive")
                         return
-                    i += 2
-                elif parts[i] == 'coords' and i + 2 < len(parts):
-                    try:
-                        x = int(parts[i + 1])
-                        y = int(parts[i + 2])
-                    except:
-                        print("Invalid coordinates")
-                        return
-                    i += 3
+                except:
+                    print("Invalid hitpoints value")
+                    return
+                i += 2
+            elif parts[i] == 'coords' and i + 2 < len(parts):
+                try:
+                    x = int(parts[i + 1])
+                    y = int(parts[i + 2])
+                except:
+                    print("Invalid coordinates")
+                    return
+                i += 3
+            else:
+                if name is None:
+                    name = parts[i]
+                    i += 1
                 else:
-                    if name is None:
-                        name = parts[i]
-                        i += 1
-                    else:
-                        print("Invalid command syntax")
-                        return
+                    print("Invalid command syntax")
+                    return
 
-            if None in [name, hello, hp, x, y]:
-                print("Missing required parameters")
-                return
+        if None in [name, hello, hp, x, y]:
+            print("Missing required parameters")
+            return
 
-            self.add_monster(name, x, y, hello, hp)
-        else:
-            print("Invalid command")
+        self.add_monster(name, x, y, hello, hp)
 
-print("<<< Welcome to Python-MUD 0.1 >>>")
-game = MUD()
-if sys.stdin.isatty():
-    while True:
-        game.process_cmd(input())
-else:
-    for line in sys.stdin:
-        game.process_cmd(line.strip())
+def main():
+    print("<<< Welcome to Python-MUD 0.1 >>>")
+    game = MUD()
+    if sys.stdin.isatty():
+        game.cmdloop()
+    else:
+        for line in sys.stdin:
+            line = line.strip()
+            if line:
+                game.onecmd(line) 
+
+if __name__ == '__main__':
+    main()
