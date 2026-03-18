@@ -9,6 +9,7 @@ class MUD(cmd.Cmd):
         self.field = [[None for _ in range(10)] for _ in range(10)]
         self.player_position = (0, 0)
         self.prompt = 'MUD> '
+        self.addmon_params = ['hello', 'hp', 'coords']
         with open('/tmp/jgsbat.cow', 'w') as f:
             f.write("""
     ,_                    _,
@@ -41,7 +42,6 @@ class MUD(cmd.Cmd):
         self.player_position = (x, y)
         print(f"Moved to ({x}, {y})")
         self.encounter(x, y)
-
 
     def add_monster(self, name, x, y, hello, hp):
         if name not in self.available_monsters and name != 'jgsbat':
@@ -132,11 +132,37 @@ class MUD(cmd.Cmd):
             return
 
         self.add_monster(name, x, y, hello, hp)
+
     def do_EOF(self, arg):
         print()
         return True
 
-
+    def complete_addmon(self, text, line, begidx, endidx):
+        parts = line[:endidx].split()
+        if len(parts) <= 2:
+            monsters = self.available_monsters + ['jgsbat']
+            result = []
+            for m in monsters:
+                if m.startswith(text):
+                    result.append(m)
+            return result
+        else:
+            last = parts[-1].lower()
+            if last not in ('hello', 'hp', 'coords'):
+                used = []
+                for w in parts:
+                    if w.lower() in self.addmon_params:
+                        used.append(w.lower())
+                available = []
+                for p in self.addmon_params:
+                    if p not in used:
+                        available.append(p)
+                result = []
+                for a in available:
+                    if a.startswith(text.lower()):
+                        result.append(a)
+                return result
+        return []
 
 def main():
     print("<<< Welcome to Python-MUD 0.1 >>>")
