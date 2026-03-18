@@ -184,7 +184,7 @@ class MUD(cmd.Cmd):
             return
             
         if weapon not in self.weapons:
-            print("Unkown weapon")
+            print("Unknown weapon")
             return
             
         x, y = self.player_position
@@ -204,6 +204,14 @@ class MUD(cmd.Cmd):
         else:
             self.field[x][y] = (name, hello, hp)
             print(f"{name} now has {hp}")
+            
+    def complete_attack(self, text, line, start, end):
+        parts = line.split()
+        
+        if len(parts) >= 2 and parts[1] == 'with':
+            return [w for w in self.weapons.keys() if w.startswith(text)]
+        
+        return []
             
         
 def main():
