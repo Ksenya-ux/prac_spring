@@ -173,6 +173,7 @@ class MUD(cmd.Cmd):
         try:
             parts = shlex.split(arg)
         except:
+<<<<<<< HEAD
             print("Invalid syntax")
             return
         if len(parts) == 0:
@@ -187,14 +188,33 @@ class MUD(cmd.Cmd):
             print("Unknown weapon")
             return
             
+=======
+            print("Invalid command syntax")
+            return
+        
+        if len(parts) != 1:
+            print("Invalid command syntax")
+            return
+        
+        monster_name = parts[0]
+>>>>>>> attack_by_name
         x, y = self.player_position
         monster = self.field[x][y]
         
         if monster is None:
-            print("No monster here")
+            print(f"No {monster_name} here")
             return
         name, hello, hp = monster
+<<<<<<< HEAD
         damage = min(hp, self.weapons[weapon])
+=======
+        
+        if name != monster_name:
+            print(f"No {monster_name} here")
+            return
+            
+        damage = min(hp, 10)
+>>>>>>> attack_by_name
         hp = hp - damage
         print(f"Attacked {name}, damage {damage} hp")
         
@@ -204,6 +224,7 @@ class MUD(cmd.Cmd):
         else:
             self.field[x][y] = (name, hello, hp)
             print(f"{name} now has {hp}")
+<<<<<<< HEAD
             
     def complete_attack(self, text, line, start, end):
         parts = line.split()
@@ -213,6 +234,11 @@ class MUD(cmd.Cmd):
         
         return []
             
+=======
+    
+    def complete_attack(self, text, line, start, end):
+        return [m for m in self.available_monsters + ['jgsbat'] if m.startswith(text)]
+>>>>>>> attack_by_name
         
 def main():
     print("<<< Welcome to Python-MUD 0.1 >>>")
