@@ -176,6 +176,12 @@ class MUD(cmd.Cmd):
         hp = hp - damage
         print(f"Attacked <name>, damage <damage> hp")
         
+        if hp == 0:
+            self.field[x][y] = None
+            print(" {name}  died")
+        else:
+            self.field[x][y] = (name, hello, hp)
+            print(f"{name} now has {hp}")
         
 def main():
     print("<<< Welcome to Python-MUD 0.1 >>>")
