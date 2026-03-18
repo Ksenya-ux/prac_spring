@@ -165,23 +165,41 @@ class MUD(cmd.Cmd):
         return []
         
     def do_attack(self, arg):
+        try:
+            parts = shlex.split(arg)
+        except:
+            print("Invalid command syntax")
+            return
+        
+        if len(parts) != 1:
+            print("Invalid command syntax")
+            return
+        
+        monster_name = parts[0]
         x, y = self.player_position
         monster = self.field[x][y]
-		
+        
         if monster is None:
-            print("No monster here")
+            print(f"No {monster_name} here")
             return
         name, hello, hp = monster
-        damage = min(hp,10)
+        
+        if name != monster_name:
+            print(f"No {monster_name} here")
+            return
+            
+        damage = min(hp, 10)
         hp = hp - damage
-        print(f"Attacked <name>, damage <damage> hp")
+        print(f"Attacked {name}, damage {damage} hp")
         
         if hp == 0:
             self.field[x][y] = None
-            print(" {name}  died")
+            print(f"{name} died")
         else:
             self.field[x][y] = (name, hello, hp)
             print(f"{name} now has {hp}")
+    def complete_attack(self, text, line, start, end):
+        return [m for m in self.available_monsters + ['jgsbat'] if m.startswith(text)]
             
         
 def main():
