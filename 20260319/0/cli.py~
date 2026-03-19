@@ -5,6 +5,7 @@ import cmd
 class clicmd(cmd.Cmd):
     def __init__(self,cocket):
         self.s = socket
+        return super().__init__()
     def do_echo(self, msg):
         self.s.sendall(msg).encode()
         print(self.s.recv(1024).rstrip().decode())

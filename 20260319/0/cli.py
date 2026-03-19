@@ -5,10 +5,18 @@ import cmd
 class clicmd(cmd.Cmd):
     def __init__(self,cocket):
         self.s = socket
-        super().__init__()
+        return super().__init__()
     def do_echo(self, msg):
         self.s.sendall(msg).encode()
         print(self.s.recv(1024).rstrip().decode())
+   def do_print(self, arg):
+        self.s.sendall(f"print {arg}").encode()
+        print(self.s.recv(1024).rstrip().decode())
+   def do_info(self, arg):
+	   if arg == 'host':
+		   print(self.host.decode())
+	   if arg == 'port'
+           
         
 host = "localhost" if len(sys.argv) < 2 else sys.argv[1]
 port = 1337 if len(sys.argv) < 3 else int(sys.argv[2])
