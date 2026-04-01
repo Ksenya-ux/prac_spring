@@ -8,8 +8,6 @@ import cmd
 class MUD(cmd.Cmd):
     def __init__(self):
         super().__init__()
-        self.field = [[None for _ in range(10)] for _ in range(10)]
-        self.player_position = (0, 0)
         self.prompt = 'MUD> '
         self.addmon_params = ['hello', 'hp', 'coords']
         self.weapons = {
@@ -67,14 +65,6 @@ class MUD(cmd.Cmd):
                     print(cowsay.cowsay(message=hello, cowfile=self.jgsbat))
                 else:
                     print(cowsay.cowsay(message=hello, cow=name))
-
-    def add_monster(self, name, x, y, hello, hp):
-        response = self.send_request(f"addmon {name} {x} {y} {hello} {hp}")
-        for line in response.split('\n'):
-            print(line)
-
-    def encounter(self, x, y):
-        pass
 
     def do_up(self, arg):
         self.move_player('up')
@@ -139,7 +129,9 @@ class MUD(cmd.Cmd):
             print("Missing required parameters")
             return
 
-        self.add_monster(name, x, y, hello, hp)
+        response = self.send_request(f"addmon {name} {x} {y} {hello} {hp}")
+        for line in response.split('\n'):
+            print(line)
 
     def do_EOF(self, arg):
         print()
