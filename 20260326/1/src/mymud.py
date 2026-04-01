@@ -11,7 +11,6 @@ class MUD(cmd.Cmd):
     def __init__(self, username):
         super().__init__()
         self.prompt = 'MUD> '
-        self.username = username
         self.addmon_params = ['hello', 'hp', 'coords']
         self.weapons = {
             'sword': 10,
@@ -36,75 +35,78 @@ class MUD(cmd.Cmd):
             self.jgsbat = cowsay.read_dot_cow(f)
 
         self.available_monsters = cowsay.list_cows()
+        self.username = username
 
         self.loop = asyncio.new_event_loop()
         self.reader = None
         self.writer = None
-        self.connected = threading.Event()
-        self.failed = False
+        self.connected = False
+        self.login_done = threading.Event()
 
-        self.net_thread = threading.Thread(target=self._network_loop, daemon=True)
+        self.net_thread = threading.Thread(target=self._run_network, daemon=True)
         self.net_thread.start()
-        self.connected.wait()
 
-    def _network_loop(self):
+    def _run_network(self):
         asyncio.set_event_loop(self.loop)
         self.loop.run_until_complete(self.connect())
-        if self.writer is not None and not self.failed:
-            self.loop.create_task(self.reader_task())
+        if self.connected:
+            self.loop.create_task(self.receive_messages())
             self.loop.run_forever()
+        self.login_done.set()
 
     async def connect(self):
         try:
             self.reader, self.writer = await asyncio.open_connection('127.0.0.1', 1337)
-            self.writer.write((self.username + '\n').encode())
+            self.writer.write(f'login {self.username}\n'.encode())
             await self.writer.drain()
+
             data = await self.reader.readline()
             if not data:
-                print('Connection closed')
-                self.failed = True
-                self.connected.set()
+                print("Connection closed by server")
+                self.login_done.set()
                 return
-            msg = data.decode().rstrip('\n')
+
+            msg = data.decode().rstrip('\n').replace('\\n', '\n')
             print(msg)
-            if msg != 'Connected':
-                self.failed = True
+
+            if msg.startswith("Hello"):
+                self.connected = True
+            else:
                 self.writer.close()
                 await self.writer.wait_closed()
-                self.writer = None
-            self.connected.set()
-        except Exception:
-            print('Connection failed')
-            self.failed = True
-            self.connected.set()
 
-    async def reader_task(self):
+        except OSError as e:
+            print(f"Connection error: {e}")
+        finally:
+            self.login_done.set()
+
+    async def receive_messages(self):
         try:
             while True:
                 data = await self.reader.readline()
                 if not data:
-                    print(f"\nConnection closed\n{self.prompt}{readline.get_line_buffer()}", end='', flush=True)
+                    print(f"\nServer disconnected\n{self.prompt}{readline.get_line_buffer()}",
+                          end="", flush=True)
+                    self.connected = False
                     break
-                print(f"\n{data.decode().rstrip()}\n{self.prompt}{readline.get_line_buffer()}", end='', flush=True)
-        finally:
-            if self.writer is not None:
-                self.writer.close()
-                await self.writer.wait_closed()
-            self.loop.stop()
 
-    async def _send(self, line):
+                msg = data.decode().rstrip('\n').replace('\\n', '\n')
+                print(f"\n{msg}\n{self.prompt}{readline.get_line_buffer()}",
+                      end="", flush=True)
+        except Exception:
+            self.connected = False
+
+    async def send_line_async(self, line):
         if self.writer is None:
             return
         self.writer.write((line + '\n').encode())
         await self.writer.drain()
 
-    def send_request(self, line):
-        if self.writer is None:
+    def send_line(self, line):
+        if not self.connected:
+            print("Not connected")
             return
-        asyncio.run_coroutine_threadsafe(self._send(line), self.loop)
-
-    def move_player(self, direction):
-        self.send_request(f"move {direction}")
+        asyncio.run_coroutine_threadsafe(self.send_line_async(line), self.loop)
 
     def do_move(self, arg):
         try:
@@ -124,19 +126,19 @@ class MUD(cmd.Cmd):
             print("Invalid command syntax")
             return
 
-        self.send_request(f"moveabs {x} {y}")
+        self.send_line(f"moveabs {x} {y}")
 
     def do_up(self, arg):
-        self.move_player('up')
+        self.send_line('move up')
 
     def do_down(self, arg):
-        self.move_player('down')
+        self.send_line('move down')
 
     def do_left(self, arg):
-        self.move_player('left')
+        self.send_line('move left')
 
     def do_right(self, arg):
-        self.move_player('right')
+        self.send_line('move right')
 
     def do_addmon(self, arg):
         try:
@@ -189,23 +191,7 @@ class MUD(cmd.Cmd):
             print("Missing required parameters")
             return
 
-        self.send_request(f"addmon {name} {x} {y} {hello} {hp}")
-
-    def do_EOF(self, arg):
-        print()
-        if self.writer is not None:
-            fut = asyncio.run_coroutine_threadsafe(self._close(), self.loop)
-            try:
-                fut.result(timeout=1)
-            except:
-                pass
-        return True
-
-    async def _close(self):
-        if self.writer is not None:
-            self.writer.close()
-            await self.writer.wait_closed()
-            self.writer = None
+        self.send_line(f"addmon {arg}")
 
     def complete_addmon(self, text, line, begidx, endidx):
         parts = line[:endidx].split()
@@ -262,12 +248,15 @@ class MUD(cmd.Cmd):
             return
 
         target = '*' if monster_name is None else monster_name
-        self.send_request(f"attack {target} {weapon}")
+        self.send_line(f"attack {target} {weapon}")
 
     def complete_attack(self, text, line, begidx, endidx):
         parts = line[:endidx].split()
 
-        if len(parts) >= 2 and parts[-1].lower() == 'with':
+        if len(parts) <= 2 and not any(p.lower() == 'with' for p in parts):
+            monsters = self.available_monsters + ['jgsbat']
+            return [m for m in monsters if m.startswith(text)]
+        elif len(parts) >= 2 and parts[-1].lower() == 'with':
             return [w for w in self.weapons.keys() if w.startswith(text)]
         elif len(parts) >= 3 and parts[-2].lower() == 'with':
             return [w for w in self.weapons.keys() if w.startswith(text)]
@@ -276,16 +265,35 @@ class MUD(cmd.Cmd):
                 return ['with']
         return []
 
+    def do_EOF(self, arg):
+        print()
+        if self.writer is not None:
+            future = asyncio.run_coroutine_threadsafe(self.close_connection(), self.loop)
+            try:
+                future.result(timeout=2)
+            except:
+                pass
+        if self.loop.is_running():
+            self.loop.call_soon_threadsafe(self.loop.stop)
+        return True
+
+    async def close_connection(self):
+        self.writer.close()
+        await self.writer.wait_closed()
+
 
 def main():
     if len(sys.argv) != 2:
-        print(f"Usage: {sys.argv[0]} username")
+        print(f"Usage: python {sys.argv[0]} username")
         return
 
     print("<<< Welcome to Python-MUD 0.1 >>>")
     game = MUD(sys.argv[1])
-    if game.failed:
+    game.login_done.wait()
+
+    if not game.connected:
         return
+
     if sys.stdin.isatty():
         game.cmdloop()
     else:
