@@ -27,6 +27,16 @@ class Game:
             'axe': 20
         }
 
+    def _move_to(self, x, y):
+        x %= 10
+        y %= 10
+        self.player_position = (x, y)
+        monster = self.field[x][y]
+        if monster is not None:
+            name, hello, hp = monster
+            return f"MOVED_ENCOUNTER {x} {y} {name} {hello}"
+        return f"MOVED {x} {y}"
+
     def move_player(self, direction):
         x, y = self.player_position
         if direction == 'up':
@@ -37,28 +47,24 @@ class Game:
             x = (x - 1) % 10
         elif direction == 'right':
             x = (x + 1) % 10
+        return self._move_to(x, y)
 
-        self.player_position = (x, y)
-        monster = self.field[x][y]
-        if monster is not None:
-            name, hello, hp = monster
-            return f"MOVED {x} {y}\nENCOUNTER {name} {hello}"
-        return f"MOVED {x} {y}"
+    def move_absolute(self, x, y):
+        return self._move_to(x, y)
 
     def add_monster(self, name, x, y, hello, hp):
         if name not in self.available_monsters and name != 'jgsbat':
-            return "Cannot add unknown monster"
+            return "ERR_UNKNOWN_MONSTER"
 
         if (x, y) == self.player_position:
-            return "Cannot add monster to player's position"
+            return "ERR_PLAYER_CELL"
 
         old_mon = self.field[x][y] is not None
         self.field[x][y] = (name, hello, hp)
 
-        result = f"Added monster {name} to ({x}, {y}) saying {hello} with {hp} hp"
         if old_mon:
-            result += "\nReplaced the old monster"
-        return result
+            return f"ADDMON_REPLACED {name} {x} {y} {hello} {hp}"
+        return f"ADDMON_OK {name} {x} {y} {hello} {hp}"
 
     def attack(self, monster_name, weapon):
         x, y = self.player_position
@@ -66,26 +72,23 @@ class Game:
 
         if monster is None:
             if monster_name:
-                return f"No {monster_name} here"
-            return "No monster here"
+                return f"NO_MONSTER {monster_name}"
+            return "NO_MONSTER"
 
         name, hello, hp = monster
 
         if monster_name and name != monster_name:
-            return f"No {monster_name} here"
+            return f"NO_MONSTER {monster_name}"
 
         damage = min(hp, self.weapons[weapon])
         hp = hp - damage
-        result = f"Attacked {name}, damage {damage} hp"
 
         if hp <= 0:
             self.field[x][y] = None
-            result += f"\n{name} died"
+            return f"ATTACK_DIED {name} {damage}"
         else:
             self.field[x][y] = (name, hello, hp)
-            result += f"\n{name} now has {hp}"
-
-        return result
+            return f"ATTACK_LEFT {name} {damage} {hp}"
 
 
 game = Game()
@@ -98,6 +101,9 @@ def handle_command(line):
 
     if parts[0] == "move":
         return game.move_player(parts[1])
+
+    if parts[0] == "moveabs":
+        return game.move_absolute(int(parts[1]), int(parts[2]))
 
     if parts[0] == "addmon":
         name = parts[1]

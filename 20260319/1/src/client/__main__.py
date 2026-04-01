@@ -52,19 +52,46 @@ class MUD(cmd.Cmd):
     def send_request(self, line):
         return self.loop.run_until_complete(self.request(line))
 
+    def _print_move_response(self, response):
+        parts = response.split(maxsplit=4)
+        if not parts:
+            return
+
+        if parts[0] == "MOVED":
+            _, x, y = parts
+            print(f"Moved to ({x}, {y})")
+        elif parts[0] == "MOVED_ENCOUNTER":
+            _, x, y, name, hello = parts
+            print(f"Moved to ({x}, {y})")
+            if name == 'jgsbat':
+                print(cowsay.cowsay(message=hello, cowfile=self.jgsbat))
+            else:
+                print(cowsay.cowsay(message=hello, cow=name))
+
     def move_player(self, direction):
         response = self.send_request(f"move {direction}")
+        self._print_move_response(response)
 
-        for line in response.split('\n'):
-            if line.startswith("MOVED "):
-                _, x, y = line.split()
-                print(f"Moved to ({x}, {y})")
-            elif line.startswith("ENCOUNTER "):
-                _, name, hello = line.split(maxsplit=2)
-                if name == 'jgsbat':
-                    print(cowsay.cowsay(message=hello, cowfile=self.jgsbat))
-                else:
-                    print(cowsay.cowsay(message=hello, cow=name))
+    def do_move(self, arg):
+        try:
+            parts = shlex.split(arg)
+        except:
+            print("Invalid command syntax")
+            return
+
+        if len(parts) != 2:
+            print("Invalid command syntax")
+            return
+
+        try:
+            x = int(parts[0])
+            y = int(parts[1])
+        except:
+            print("Invalid command syntax")
+            return
+
+        response = self.send_request(f"moveabs {x} {y}")
+        self._print_move_response(response)
 
     def do_up(self, arg):
         self.move_player('up')
@@ -130,8 +157,21 @@ class MUD(cmd.Cmd):
             return
 
         response = self.send_request(f"addmon {name} {x} {y} {hello} {hp}")
-        for line in response.split('\n'):
-            print(line)
+        parts = response.split(maxsplit=6)
+        if not parts:
+            return
+
+        if parts[0] == "ADDMON_OK":
+            _, name, x, y, hello, hp = parts
+            print(f"Added monster {name} to ({x}, {y}) saying {hello} with {hp} hp")
+        elif parts[0] == "ADDMON_REPLACED":
+            _, name, x, y, hello, hp = parts
+            print(f"Added monster {name} to ({x}, {y}) saying {hello} with {hp} hp")
+            print("Replaced the old monster")
+        elif parts[0] == "ERR_UNKNOWN_MONSTER":
+            print("Cannot add unknown monster")
+        elif parts[0] == "ERR_PLAYER_CELL":
+            print("Cannot add monster to player's position")
 
     def do_EOF(self, arg):
         print()
@@ -196,8 +236,24 @@ class MUD(cmd.Cmd):
 
         target = '*' if monster_name is None else monster_name
         response = self.send_request(f"attack {target} {weapon}")
-        for line in response.split('\n'):
-            print(line)
+        parts = response.split(maxsplit=3)
+
+        if not parts:
+            return
+
+        if parts[0] == "NO_MONSTER":
+            if monster_name:
+                print(f"No {monster_name} here")
+            else:
+                print("No monster here")
+        elif parts[0] == "ATTACK_DIED":
+            _, name, damage = parts
+            print(f"Attacked {name}, damage {damage} hp")
+            print(f"{name} died")
+        elif parts[0] == "ATTACK_LEFT":
+            _, name, damage, hp = parts
+            print(f"Attacked {name}, damage {damage} hp")
+            print(f"{name} now has {hp}")
 
     def complete_attack(self, text, line, begidx, endidx):
         parts = line[:endidx].split()
