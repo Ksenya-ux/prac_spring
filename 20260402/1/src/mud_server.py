@@ -200,6 +200,13 @@ def handle_command(username, line):
         monster_name = None if parts[1] == '*' else parts[1]
         weapon = parts[2]
         return game.attack(username, monster_name, weapon), True
+    
+    if parts[0] == "sayall":
+        if len(parts) < 2:
+            return "Usage: sayall <message>", False
+        message = ' '.join(parts[1:])
+        # Возвращаем сообщение для broadcast с указанием автора
+        return f"{username}: {message}", True  
 
     return "", False
 
@@ -235,10 +242,10 @@ async def handle_client(reader, writer):
             await writer.wait_closed()
             return
 
-        # 👇 вот здесь приветствие
+        # вот здесь приветствие
         await game.send_to(writer, f"Hello, {username}")
 
-        # 👇 и широковещательное сообщение
+        # широковещательное сообщение
         await game.broadcast(f"{username} entered the MUD")
 
         while True:

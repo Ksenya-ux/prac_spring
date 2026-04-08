@@ -280,6 +280,23 @@ class MUD(cmd.Cmd):
     async def close_connection(self):
         self.writer.close()
         await self.writer.wait_closed()
+    
+    def do_sayall(self, arg):
+        if not arg:
+            print("Usage: sayall <message>")
+            return
+        
+        try:
+            parts = shlex.split(arg)
+            if not parts:
+                print("Usage: sayall <message>")
+                return
+        except:
+            print("Invalid message format")
+            return
+        
+        # Отправляем команду на сервер
+        self.send_line(f"sayall {arg}")
 
 
 def main():
