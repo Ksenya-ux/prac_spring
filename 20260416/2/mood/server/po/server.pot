@@ -1,0 +1,67 @@
+# Translations template for PROJECT.
+# Copyright (C) 2026 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2026-04-26 19:20+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: server.py:25
+#, python-brace-format
+msgid "{} hp"
+msgid_plural "{} hp"
+msgstr[0] ""
+msgstr[1] ""
+
+#: server.py:34
+#, python-brace-format
+msgid "Set up locale: {}"
+msgstr ""
+
+#: server.py:37
+#, python-brace-format
+msgid "{} entered the MUD"
+msgstr ""
+
+#: server.py:40
+#, python-brace-format
+msgid "{} left the MUD"
+msgstr ""
+
+#: server.py:43
+#, python-brace-format
+msgid "{user} switched moving monsters: {state}"
+msgstr ""
+
+#: server.py:49
+#, python-brace-format
+msgid "{user} added monster {monster} to ({x}, {y}) saying {hello} with {hp}"
+msgstr ""
+
+#: server.py:58
+msgid "Replaced the old monster"
+msgstr ""
+
+#: server.py:62
+#, python-brace-format
+msgid "{user} attacked {monster} with {weapon}, damage {damage}, {monster} died"
+msgstr ""
+
+#: server.py:70
+#, python-brace-format
+msgid ""
+"{user} attacked {monster} with {weapon}, damage {damage}, {monster} now "
+"has {hp}"
+msgstr ""
+

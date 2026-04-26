@@ -59,7 +59,7 @@ class MUD(cmd.Cmd):
     async def connect(self):
         try:
             self.reader, self.writer = await asyncio.open_connection(DEFAULT_HOST, DEFAULT_PORT)
-            self.writer.write(f'login {self.username}\n'.encode())
+            self.writer.write("login {}\n".format(self.username).encode())
             await self.writer.drain()
 
             data = await self.reader.readline()
@@ -78,7 +78,7 @@ class MUD(cmd.Cmd):
                 await self.writer.wait_closed()
 
         except OSError as e:
-            print(f"Connection error: {e}")
+            print("Connection error: {}".format(e))
         finally:
             self.login_done.set()
 
@@ -87,14 +87,19 @@ class MUD(cmd.Cmd):
             while True:
                 data = await self.reader.readline()
                 if not data:
-                    print(f"\nServer disconnected\n{self.prompt}{readline.get_line_buffer()}",
-                          end="", flush=True)
+                    print("\nServer disconnected\n{}{}".format(
+                        self.prompt,
+                        readline.get_line_buffer()
+                    ), end="", flush=True)
                     self.connected = False
                     break
 
                 msg = data.decode().rstrip('\n').replace('\\n', '\n')
-                print(f"\n{msg}\n{self.prompt}{readline.get_line_buffer()}",
-                      end="", flush=True)
+                print("\n{}\n{}{}".format(
+                    msg,
+                    self.prompt,
+                    readline.get_line_buffer()
+                ), end="", flush=True)
         except Exception:
             self.connected = False
 
@@ -118,6 +123,19 @@ class MUD(cmd.Cmd):
         asyncio.run_coroutine_threadsafe(self.send_line_async(line), self.loop)
         self.last_command_time = time.time()
 
+    def do_locale(self, arg):
+        try:
+            parts = shlex.split(arg)
+        except ValueError:
+            print("Invalid command syntax")
+            return
+
+        if len(parts) != 1:
+            print("Invalid command syntax")
+            return
+
+        self.send_line("locale {}".format(parts[0]))
+
     def do_move(self, arg):
         try:
             parts = shlex.split(arg)
@@ -136,7 +154,7 @@ class MUD(cmd.Cmd):
             print("Invalid command syntax")
             return
 
-        self.send_line(f"moveabs {x} {y}")
+        self.send_line("moveabs {} {}".format(x, y))
 
     def do_up(self, arg):
         self.send_line('move up')
@@ -201,7 +219,7 @@ class MUD(cmd.Cmd):
             print("Missing required parameters")
             return
 
-        self.send_line(f"addmon {arg}")
+        self.send_line("addmon {}".format(arg))
 
     def complete_addmon(self, text, line, begidx, endidx):
         parts = line[:endidx].split()
@@ -258,7 +276,7 @@ class MUD(cmd.Cmd):
             return
 
         target = '*' if monster_name is None else monster_name
-        self.send_line(f"attack {target} {weapon}")
+        self.send_line("attack {} {}".format(target, weapon))
 
     def complete_attack(self, text, line, begidx, endidx):
         parts = line[:endidx].split()
@@ -305,7 +323,7 @@ class MUD(cmd.Cmd):
             print("Invalid message format")
             return
 
-        self.send_line(f"sayall {arg}")
+        self.send_line("sayall {}".format(arg))
 
     def do_movemonsters(self, arg):
         try:
@@ -318,7 +336,7 @@ class MUD(cmd.Cmd):
             print("Invalid command syntax")
             return
 
-        self.send_line(f"movemonsters {parts[0]}")
+        self.send_line("movemonsters {}".format(parts[0]))
 
     def complete_movemonsters(self, text, line, begidx, endidx):
         return [state for state in ("on", "off") if state.startswith(text)]
@@ -359,9 +377,9 @@ def main():
                 game.onecmd(line)
                 time.sleep(1.0)
         except FileNotFoundError:
-            print(f"Command file not found: {file_path}")
+            print("Command file not found: {}".format(file_path))
         except Exception as e:
-            print(f"Error reading command file: {e}")
+            print("Error reading command file: {}".format(e))
     else:
         if sys.stdin.isatty():
             game.cmdloop()

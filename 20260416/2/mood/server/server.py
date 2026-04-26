@@ -2,12 +2,101 @@ import asyncio
 import shlex
 import random
 import cowsay
+import gettext
+import os
+import re
 
 from ..common.game import Game
 from ..common.constants import DEFAULT_HOST, DEFAULT_PORT, FIELD_SIZE
 
 game = Game()
 move_monsters_enabled = True
+
+DOMAIN = "server"
+LOCALE_DIR = os.path.join(os.path.dirname(__file__), "po")
+
+
+def get_translation(locale_name):
+    if locale_name == "ru_RU.UTF8":
+        return gettext.translation(DOMAIN, LOCALE_DIR, languages=["ru"], fallback=True)
+    return gettext.NullTranslations()
+
+
+def hp_text(n, ngettext):
+    return ngettext("{} hp", "{} hp", n).format(n)
+
+
+def localize_message(message, locale_name):
+    translation = get_translation(locale_name)
+    _ = translation.gettext
+    ngettext = translation.ngettext
+
+    m = re.fullmatch(r"Set up locale: (.+)", message)
+    if m:
+        return _("Set up locale: {}").format(m.group(1))
+
+    m = re.fullmatch(r"(.+) entered the MUD", message)
+    if m:
+        return _("{} entered the MUD").format(m.group(1))
+
+    m = re.fullmatch(r"(.+) left the MUD", message)
+    if m:
+        return _("{} left the MUD").format(m.group(1))
+
+    m = re.fullmatch(r"(.+) added monster (.+) to \((\d+), (\d+)\) saying (.+) with (\d+) hp", message)
+    if m:
+        username, name, x, y, hello, hp = m.groups()
+        hp = int(hp)
+        return _("{} added monster {} to ({}, {}) saying {} with {}").format(
+            username, name, x, y, hello, hp_text(hp, ngettext)
+        )
+
+    m = re.fullmatch(r"(.+) attacked (.+) with (.+), damage (\d+) hp, (.+) died", message)
+    if m:
+        username, name, weapon, damage, dead_name = m.groups()
+        damage = int(damage)
+        return _("{} attacked {} with {}, damage {}, {} died").format(
+            username, name, weapon, hp_text(damage, ngettext), dead_name
+        )
+
+    m = re.fullmatch(r"(.+) attacked (.+) with (.+), damage (\d+) hp, (.+) now has (\d+)", message)
+    if m:
+        username, name, weapon, damage, same_name, hp = m.groups()
+        damage = int(damage)
+        hp = int(hp)
+        return _("{} attacked {} with {}, damage {}, {} now has {}").format(
+            username, name, weapon, hp_text(damage, ngettext), same_name, hp_text(hp, ngettext)
+        )
+
+    return message
+
+
+async def send_localized_to(username, writer, message):
+    locale_name = game.players[username].get("locale")
+    await game.send_to(writer, localize_message(message, locale_name))
+
+
+async def broadcast_localized(message):
+    bad = []
+
+    for name, info in list(game.players.items()):
+        try:
+            localized = localize_message(message, info.get("locale"))
+            payload = localized.replace('\n', '\\n')
+            info["writer"].write((payload + '\n').encode())
+        except Exception:
+            bad.append(name)
+
+    for name, info in list(game.players.items()):
+        if name in bad:
+            continue
+        try:
+            await info["writer"].drain()
+        except Exception:
+            bad.append(name)
+
+    for name in bad:
+        game.remove_player(name)
 
 
 async def move_wandering_monsters():
@@ -59,7 +148,7 @@ async def move_wandering_monsters():
                 game.field[x][y] = None
                 moved = True
                 
-                response = f"{name} moved one cell {direction}"
+                response = "{} moved one cell {}".format(name, direction)
                 
                 players_on_cell = []
                 for player_name, player_info in game.players.items():
@@ -72,7 +161,7 @@ async def move_wandering_monsters():
                             monster_message = cowsay.cowsay(message=hello, cowfile=game.jgsbat)
                         else:
                             monster_message = cowsay.cowsay(message=hello, cow=name)
-                        await game.send_to(writer, f"{response}\n{monster_message}")
+                        await game.send_to(writer, "{}\n{}".format(response, monster_message))
                     
                     for player_name, player_info in game.players.items():
                         if player_info["pos"] != (new_x, new_y):
@@ -95,6 +184,13 @@ def handle_command(username, line):
     if not parts:
         return "", False
 
+    if parts[0] == "locale":
+        if len(parts) != 2:
+            return "Invalid command syntax", False
+
+        game.players[username]["locale"] = parts[1]
+        return "Set up locale: {}".format(parts[1]), False
+
     if parts[0] == "move":
         return game.move_player(username, parts[1]), False
 
@@ -103,7 +199,7 @@ def handle_command(username, line):
         y = int(parts[2])
 
         if x < 0 or x >= FIELD_SIZE or y < 0 or y >= FIELD_SIZE:
-            return f"Coordinates ({x}, {y}) are outside field (0-{FIELD_SIZE-1})", False
+            return "Coordinates ({}, {}) are outside field (0-{})".format(x, y, FIELD_SIZE - 1), False
     
         return game.move_absolute(username, x, y), False
 
@@ -156,7 +252,7 @@ def handle_command(username, line):
         if len(parts) < 2:
             return "Usage: sayall <message>", False
         message = ' '.join(parts[1:])
-        return f"{username}: {message}", True
+        return "{}: {}".format(username, message), True
 
     if parts[0] == "movemonsters":
         global move_monsters_enabled
@@ -165,7 +261,7 @@ def handle_command(username, line):
             return "Invalid command syntax", False
 
         move_monsters_enabled = parts[1] == "on"
-        return f"{username} switched moving monsters: {parts[1]}", True
+        return "{} switched moving monsters: {}".format(username, parts[1]), True
 
     return "", False
 
@@ -206,8 +302,8 @@ async def handle_client(reader, writer):
             await writer.wait_closed()
             return
 
-        await game.send_to(writer, f"Hello, {username}")
-        await game.broadcast(f"{username} entered the MUD")
+        await game.send_to(writer, "Hello, {}".format(username))
+        await broadcast_localized("{} entered the MUD".format(username))
 
         while True:
             data = await reader.readline()
@@ -219,14 +315,14 @@ async def handle_client(reader, writer):
                 continue
 
             if is_broadcast:
-                await game.broadcast(response)
+                await broadcast_localized(response)
             else:
-                await game.send_to(writer, response)
+                await send_localized_to(username, writer, response)
 
     finally:
         if username is not None and username in game.players:
+            await broadcast_localized("{} left the MUD".format(username))
             game.remove_player(username)
-            await game.broadcast(f"{username} left the MUD")
 
         writer.close()
         await writer.wait_closed()

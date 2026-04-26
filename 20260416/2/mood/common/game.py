@@ -29,7 +29,7 @@ class Game:
     def add_player(self, name, writer):
         if name in self.players:
             return False
-        self.players[name] = {"pos": (0, 0), "writer": writer}
+        self.players[name] = {"pos": (0, 0), "writer": writer, "locale": None}
         return True
 
     def remove_player(self, name):
