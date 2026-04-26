@@ -1,9 +1,0 @@
-move up
-move right
-sayall Hello everyone from script!
-addmon dragon hello "I am a dragon!" hp 100 coords 5 5
-move 5 5
-attack dragon with sword
-attack dragon with spear
-sayall Script completed!
-Ctrl+D
