@@ -1,0 +1,29 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+
+msgid "Set up locale: {}"
+msgstr ""
+
+msgid "{} entered the MUD"
+msgstr ""
+
+msgid "{} left the MUD"
+msgstr ""
+
+msgid "{} added monster {} to ({}, {}) saying {} with {}"
+msgstr ""
+
+msgid "{} attacked {} with {}, damage {}, {} died"
+msgstr ""
+
+msgid "{} attacked {} with {}, damage {}, {} now has {}"
+msgstr ""
+
+msgid "{} hp"
+msgid_plural "{} hp"
+msgstr[0] "{} очко здоровья"
+msgstr[1] "{} очка здоровья"
+msgstr[2] "{} очков здоровья"
+

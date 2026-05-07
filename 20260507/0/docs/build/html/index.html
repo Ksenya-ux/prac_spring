@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Python-MOOD Documentation &#8212; Python-MOOD 0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
+    <script src="_static/documentation_options.js?v=2709fde1"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Техническая документация" href="api.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="python-mood-documentation">
+<h1>Python-MOOD Documentation<a class="headerlink" href="#python-mood-documentation" title="Link to this heading">¶</a></h1>
+<p>Многопользовательский текстовый мир (MUD) на Python с асинхронной архитектурой.</p>
+<section id="id1">
+<h2>Техническое задание: Реализация системы бродячих монстров<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h2>
+<section id="id2">
+<h3>Цель<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h3>
+<p>Реализация автоматического перемещения монстров на сервере MUD с поддержкой энкаунтеров при столкновении с игроками.</p>
+</section>
+<section id="id3">
+<h3>Функциональные требования<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h3>
+<ol class="arabic simple">
+<li><p><strong>Периодичность перемещения</strong>
+Каждые 30 секунд после запуска сервера выполняется одно перемещение случайно выбранного монстра.</p></li>
+<li><p><strong>Механика перемещения</strong>
+Случайный монстр перемещается на одну клетку в случайном направлении (вправо, влево, вверх, вниз). Игровое поле является закольцованным.</p></li>
+<li><p><strong>Обработка коллизий</strong>
+Если  клетка занята другим монстром, текущая попытка перемещения отменяется. Система осуществляет повторный выбор монстра и направления до достижения успешного перемещения.</p></li>
+<li><p><strong>Оповещение игроков</strong>
+При каждом перемещении всем подключенным игрокам направляется системное сообщение формата:
+<code class="docutils literal notranslate"><span class="pre">&lt;имя_монстра&gt;</span> <span class="pre">moved</span> <span class="pre">one</span> <span class="pre">cell</span> <span class="pre">&lt;направление&gt;</span></code></p></li>
+<li><p><strong>Система энкаунтеров</strong>
+При попадании монстра на клетку, занятую одним или несколькими игроками, инициируется процедура энкаунтера, эквивалентная ситуации, когда игрок самостоятельно заходит на клетку с монстром. Монстр отрисовывается с использованием cowsay и произносит приветственную фразу для каждого игрока на данной клетке.</p></li>
+</ol>
+</section>
+<section id="id4">
+<h3>Технические требования<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>Документирование всех функций, классов и модулей серверной части в формате Sphinx autodoc</p></li>
+<li><p>Генерация технической документации в формате HTML</p></li>
+<li><p>Исключение сгенерированной документации из системы контроля версий (.gitignore)</p></li>
+<li><p>Сохранение конфигурационных файлов Sphinx в репозитории</p></li>
+</ul>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Содержание документации</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">Техническая документация</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api.html#module-mood.server.server">Серверный модуль</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#module-mood.common.game">Игровой движок</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api.html#id4">Константы игрового мира</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api.html#mood.common.game.FIELD_SIZE"><code class="docutils literal notranslate"><span class="pre">FIELD_SIZE</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#mood.common.game.DEFAULT_PORT"><code class="docutils literal notranslate"><span class="pre">DEFAULT_PORT</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#mood.common.game.DEFAULT_HOST"><code class="docutils literal notranslate"><span class="pre">DEFAULT_HOST</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#mood.common.game.WEAPONS"><code class="docutils literal notranslate"><span class="pre">WEAPONS</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#mood.common.game.JGSBAT_COW"><code class="docutils literal notranslate"><span class="pre">JGSBAT_COW</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="#">Python-MOOD</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Содержание документации</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">Техническая документация</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html#id4">Константы игрового мира</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="#">Documentation overview</a><ul>
+      <li>Next: <a href="api.html" title="next chapter">Техническая документация</a></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.0.4</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
