@@ -1,0 +1,10 @@
+.doit.db
+build/
+docs/conf.py
+docs/index.rst
+
+mood/server/po/server.pot
+mood/server/po/ru/LC_MESSAGES/server.mo
+
+__pycache__/
+*.pyc
