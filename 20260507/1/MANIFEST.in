@@ -1,0 +1,6 @@
+recursive-include mood/server/po *.mo
+recursive-include mood/extra_monsters *.txt
+recursive-include mood/docs/html *
+include requirements-dev.txt
+include dodo.py
+recursive-include docs *.py *.rst

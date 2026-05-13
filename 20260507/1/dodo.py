@@ -18,7 +18,7 @@ PO_FILE = RU_DIR / "server.po"
 MO_FILE = RU_DIR / "server.mo"
 
 DOC_DIR = Path("docs")
-BUILD_DIR = Path("build")
+BUILD_DIR = Path("mood/docs")
 DOC_CONF = DOC_DIR / "conf.py"
 DOC_INDEX = DOC_DIR / "index.rst"
 HTML_INDEX = BUILD_DIR / "html" / "index.html"
