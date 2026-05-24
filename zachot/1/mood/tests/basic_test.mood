@@ -1,0 +1,5 @@
+movemonsters off
+addmon default hello "Hello from file" hp 20 coords 1 0
+right
+attack default with axe
+EOF

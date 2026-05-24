@@ -1,0 +1,41 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+.venv-*/
+.venv-check/
+.venv-check1/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# doit
+.doit.db
+.doit.db.*
+
+# pytest / tooling cache
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Sphinx generated documentation
+docs/build/
+docs/source/_build/
+
+# Generated i18n files
+mood/server/po/server.pot
+
+# Compiled translations
+mood/server/po/ru/LC_MESSAGES/*.mo
+
+# OS/editor junk
+.DS_Store
+*~
+*.swp

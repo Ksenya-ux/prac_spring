@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mood-mud"
+version = "0.1.0"
+description = "Client and server for a small multiplayer MOOD game"
+requires-python = ">=3.10"
+dependencies = [
+    "python-cowsay==1.2.0",
+    "Babel",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "flake8",
+    "pycodestyle",
+    "pydocstyle",
+    "build",
+    "sphinx",
+    "doit",
+]
+
+[project.scripts]
+mood-client = "mood.client.client:main"
+mood-server = "mood.server.server:serve"
+
+[tool.setuptools]
+packages = [
+    "mood",
+    "mood.client",
+    "mood.server",
+    "mood.common",
+    "mood.tests",
+]
+include-package-data = true
+
+[tool.setuptools.package-data]
+"mood.server" = ["po/ru/LC_MESSAGES/*.mo"]
+"mood" = ["docs/html/*", "docs/html/**/*", "extra_monsters/*"]
