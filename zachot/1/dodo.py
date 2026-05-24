@@ -30,6 +30,7 @@ def clean_targets(targets):
             target = Path(target)
             if target.exists():
                 target.unlink()
+
     return clean
 
 
@@ -58,8 +59,12 @@ def extract_messages():
         f.write('msgid ""\n')
         f.write('msgstr ""\n')
         f.write('"Content-Type: text/plain; charset=UTF-8\\n"\n')
-        f.write('"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : '
-                'n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\\n"\n\n')
+        f.write(
+            '"Plural-Forms: nplurals=3; '
+            "plural=(n%10==1 && n%100!=11 ? 0 : "
+            "n%10>=2 && n%10<=4 && "
+            '(n%100<10 || n%100>=20) ? 1 : 2);\\n"\n\n'
+        )
 
         for s in strings:
             f.write(f'msgid "{s}"\n')
@@ -79,20 +84,27 @@ def update_po():
         "Set up locale: {}": "Установлена локаль: {}",
         "{} entered the MUD": "{} вошёл в MUD",
         "{} left the MUD": "{} вышел из MUD",
-        "{} added monster {} to ({}, {}) saying {} with {}":
-            "{} добавил монстра {} в ({}, {}), говорящего {}, с {}",
-        "{} attacked {} with {}, damage {}, {} died":
-            "{} атаковал {} с помощью {}, урон {}, {} умер",
-        "{} attacked {} with {}, damage {}, {} now has {}":
-            "{} атаковал {} с помощью {}, урон {}, у {} теперь {}",
+        "{} added monster {} to ({}, {}) saying {} with {}": (
+            "{} добавил монстра {} в ({}, {}), говорящего {}, с {}"
+        ),
+        "{} attacked {} with {}, damage {}, {} died": (
+            "{} атаковал {} с помощью {}, урон {}, {} умер"
+        ),
+        "{} attacked {} with {}, damage {}, {} now has {}": (
+            "{} атаковал {} с помощью {}, урон {}, у {} теперь {}"
+        ),
     }
 
     with PO_FILE.open("w", encoding="utf-8") as f:
         f.write('msgid ""\n')
         f.write('msgstr ""\n')
         f.write('"Content-Type: text/plain; charset=UTF-8\\n"\n')
-        f.write('"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : '
-                'n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\\n"\n\n')
+        f.write(
+            '"Plural-Forms: nplurals=3; '
+            "plural=(n%10==1 && n%100!=11 ? 0 : "
+            "n%10>=2 && n%10<=4 && "
+            '(n%100<10 || n%100>=20) ? 1 : 2);\\n"\n\n'
+        )
 
         for msgid, msgstr in translations.items():
             f.write(f'msgid "{msgid}"\n')
@@ -127,7 +139,8 @@ sys.path.insert(0, os.path.abspath(".."))
 project = "MUD"
 extensions = ["sphinx.ext.autodoc"]
 html_theme = "alabaster"
-""".strip() + "\n",
+""".strip()
+        + "\n",
         encoding="utf-8",
     )
 
@@ -144,7 +157,8 @@ MUD documentation
 
 .. automodule:: mood.client.client
    :members:
-""".strip() + "\n",
+""".strip()
+        + "\n",
         encoding="utf-8",
     )
 
@@ -195,7 +209,9 @@ def task_docs_sources():
 
 def task_html():
     return {
-        "actions": [["sphinx-build", "-M", "html", str(DOC_DIR), str(BUILD_DIR)]],
+        "actions": [
+            ["sphinx-build", "-M", "html", str(DOC_DIR), str(BUILD_DIR)]
+        ],
         "file_dep": list(Path("mood").rglob("*.py")),
         "targets": [HTML_INDEX],
         "task_dep": ["docs_sources"],
@@ -203,11 +219,10 @@ def task_html():
     }
 
 
-def task_test():
+def task_tests():
     return {
-        "actions": [["python", "-m", "unittest", "./mood/tests/test_server_client.py"]],
-        "task_dep": ["i18n"],
-        "clean": [],
+        "actions": None,
+        "task_dep": ["test"],
     }
 
 
@@ -217,4 +232,11 @@ def task_erase():
             clean_html,
             clean_targets([POT_FILE, PO_FILE, MO_FILE, DOC_CONF, DOC_INDEX]),
         ],
+    }
+    
+def task_test():
+    return {
+        "actions": [["python", "-m", "pytest", "-v", "-s", "mood/tests"]],
+        "task_dep": ["i18n"],
+        "clean": [],
     }
